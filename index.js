@@ -1,26 +1,40 @@
-const QRCode = require('qrcode');
-const path = require('path');
-const readline = require('readline');
+const QRCode = require("qrcode");
+const path = require("path");
+const readline = require("readline");
+const fs = require("fs");
 
-// Configuración de la interfaz de línea de comandos
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
-// Pregunta al usuario la URL
-rl.question('Ingrese la URL para generar el código QR: ', (url) => {
-  // Genera el código QR y lo guarda en un archivo
-  QRCode.toFile(path.join(__dirname, 'output.png'), url, (err) => {
-    if (err) throw err;
-    console.log('Código QR generado exitosamente en output.png');
-    // Cierra la interfaz de línea de comandos
-    rl.close();
+const outputFolder = path.join(__dirname, "output");
+
+// Verifica y crea el directorio de salida si no existe
+if (!fs.existsSync(outputFolder)) {
+  fs.mkdirSync(outputFolder);
+}
+
+rl.question("Ingrese la URL para generar el código QR: ", (url) => {
+  const outputPath = path.join(outputFolder, "output.png"); // Utiliza el directorio de salida
+
+  QRCode.toFile(outputPath, url, {
+    width: 500,
+    height: 500,
+    background: "transparent",
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+  }, (err) => {
+    if (err) {
+      console.error("Error al generar el código QR:", err.message);
+    } else {
+      console.log(`Código QR generado exitosamente en ${outputPath}`);
+    }
+    rl.close(); // Cierra la interfaz de línea de comandos después de completar la operación
   });
 });
 
-// Evento cuando la interfaz de línea de comandos se cierra
-rl.on('close', () => {
-  console.log('Programa finalizado.');
+rl.on("close", () => {
+  console.log("Programa finalizado.");
   process.exit(0);
 });
